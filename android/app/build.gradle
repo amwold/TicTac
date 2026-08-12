@@ -1,0 +1,95 @@
+plugins {
+  id 'com.android.application'
+  id 'kotlin-android'
+  id 'dev.flutter.flutter-gradle-plugin'
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+  localPropertiesFile.withReader('UTF-8') { reader ->
+    localProperties.load(reader)
+  }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode') ?: '1'
+def flutterVersionName = localProperties.getProperty('flutter.versionName') ?: '1.0.0'
+
+android {
+  namespace 'com.tictac.amwold'
+  compileSdk 34
+  ndkVersion flutter.ndkVersion
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = JavaVersion.VERSION_17.toString()
+  }
+
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+  }
+
+  defaultConfig {
+    applicationId 'com.tictac.amwold'
+    minSdk 24
+    targetSdk 34
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+    multiDexEnabled true
+    ndk {
+      abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+    }
+  }
+
+  signingConfigs {
+    release {
+      if (System.getenv('TICTAC_KEYSTORE_PATH')) {
+        storeFile file(System.getenv('TICTAC_KEYSTORE_PATH'))
+        storePassword System.getenv('TICTAC_KEYSTORE_PASSWORD')
+        keyAlias System.getenv('TICTAC_KEY_ALIAS')
+        keyPassword System.getenv('TICTAC_KEY_PASSWORD')
+      } else {
+        storeFile file('debug.keystore')
+        storePassword 'android'
+        keyAlias 'androiddebugkey'
+        keyPassword 'android'
+      }
+    }
+  }
+
+  buildTypes {
+    release {
+      signingConfig signingConfigs.release
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    }
+    debug {
+      signingConfig signingConfigs.debug
+      minifyEnabled false
+    }
+  }
+
+  buildFeatures {
+    buildConfig true
+  }
+
+  packagingOptions {
+    jniLibs {
+      useLegacyPackaging true
+    }
+  }
+}
+
+flutter {
+  source '../..'
+}
+
+dependencies {
+  implementation 'androidx.multidex:multidex:2.0.1'
+  implementation 'androidx.core:core-ktx:1.13.1'
+}
